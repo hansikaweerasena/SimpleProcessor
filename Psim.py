@@ -93,9 +93,9 @@ def alu(arithmeticInstructionBufferCurrent):
         elif arithmeticInstruction[0] == "SUB":
             result = arithmeticInstruction[2] - arithmeticInstruction[3]
         elif arithmeticInstruction[0] == "AND":
-            result = arithmeticInstruction[2] and arithmeticInstruction[3]
+            result = arithmeticInstruction[2] & arithmeticInstruction[3]
         else:
-            result = arithmeticInstruction[2] or arithmeticInstruction[3]
+            result = arithmeticInstruction[2] | arithmeticInstruction[3]
         arithmeticInstructionBuffer.pop(0)
         resultBuffer.append([arithmeticInstruction[1], result])
 
@@ -111,7 +111,7 @@ def addressCalculation(loadInstructionBufferCurrent):
 def load(addressBufferCurrent):
     if addressBufferCurrent:
         addressBufferInstruction = addressBufferCurrent[0]
-        data = dataMemory[addressBufferInstruction[1]]
+        data = dataMemory[addressBufferInstruction[1]][1]
         resultBuffer.append([addressBufferInstruction[0], data])
         addressBuffer.pop(0)
 
@@ -133,7 +133,7 @@ def printResults(step):
     print(resultBuffer)
     print(registerFile)
     print(dataMemory)
-
+    print("\n")
 
 stepCount = 0
 initialize()
@@ -141,22 +141,13 @@ printResults(stepCount)
 stepCount += 1
 
 while instructionsMemory or loadInstructionBuffer or arithmeticInstructionBuffer or addressBuffer or resultBuffer:
-    dataMemoryCurrent = list.copy(dataMemory)
-    instructionsMemoryCurrent = list.copy(instructionsMemory)
-    registerFileCurrent = list.copy(registerFile)
-    instructionsBufferCurrent = list.copy(instructionsBuffer)
-    arithmeticInstructionBufferCurrent = list.copy(arithmeticInstructionBuffer)
-    loadInstructionBufferCurrent = list.copy(loadInstructionBuffer)
-    resultBufferCurrent = list.copy(resultBuffer)
-    addressBufferCurrent = list.copy(addressBuffer)
-
-    decodeAndRead(instructionsMemoryCurrent, registerFileCurrent)
-    issue1(instructionsBufferCurrent)
-    issue2(instructionsBufferCurrent)
-    alu(arithmeticInstructionBufferCurrent)
-    addressCalculation(loadInstructionBufferCurrent)
-    load(addressBufferCurrent)
-    write(resultBufferCurrent)
+    write(resultBuffer)
+    load(addressBuffer)
+    addressCalculation(loadInstructionBuffer)
+    alu(arithmeticInstructionBuffer)
+    issue2(instructionsBuffer)
+    issue1(instructionsBuffer)
+    decodeAndRead(instructionsMemory, registerFile)
 
     printResults(stepCount)
     stepCount += 1
