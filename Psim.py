@@ -21,6 +21,7 @@ def readFileLineByLine(filename):
     itemList = []
     for line in Lines:
         itemList.append(line.strip())
+    file1.close()
     return itemList
 
 
@@ -58,7 +59,6 @@ def decodeAndRead(instructionsMemoryCurrent, registerFileCurrent):
         if registerFileCurrent[operand2]:
             instruction[3] = int(registerFileCurrent[operand2][1])
         instructionsBuffer.append(instruction)
-
 
 
 def issue1(instructionsBufferCurrent):
@@ -119,28 +119,50 @@ def load(addressBufferCurrent):
 def write(resultBufferCurrent):
     if resultBufferCurrent:
         result = resultBufferCurrent[0]
-        registerFile[int(result[0].replace("R", ""))] = result[1]
+        registerFile[int(result[0].replace("R", ""))] = resultBufferCurrent[0]
         resultBuffer.pop(0)
 
 
+def fromat2Elements(lst):
+    return ["<" + str(item[0]) + "," + str(item[1]) + ">" for item in lst]
+
+def fromat4Elements(lst):
+    return ["<" + str(item[0]) + "," + str(item[1]) + "," + str(item[2]) + "," + str(item[3]) + ">" for item in lst]
+
 def printResults(step):
-    print("Step" + str(step) + ":")
-    print(instructionsMemory)
-    print(instructionsBuffer)
-    print(arithmeticInstructionBuffer)
-    print(loadInstructionBuffer)
-    print(addressBuffer)
-    print(resultBuffer)
-    print(registerFile)
-    print(dataMemory)
+    print("Step " + str(step) + ":")
+    print("INM:" + ",".join(fromat4Elements(instructionsMemory)))
+    print("INB:" + ",".join(fromat4Elements(instructionsBuffer)))
+    print("AIB:" + ",".join(fromat4Elements(arithmeticInstructionBuffer)))
+    print("LIB:" + ",".join(fromat4Elements(loadInstructionBuffer)))
+    print("ADB:" + ",".join(fromat2Elements(addressBuffer)))
+    print("REB:" + ",".join(fromat2Elements(resultBuffer)))
+    print("RGF:" + ",".join(fromat2Elements(registerFile)))
+    print("DAM:" + ",".join(fromat2Elements(dataMemory)))
     print("\n")
+
+def writeResults(step,filez):
+    filez.write("STEP " + str(step) + ":" + "\n")
+    filez.write("INM:" + ",".join(fromat4Elements(instructionsMemory)) + "\n")
+    filez.write("INB:" + ",".join(fromat4Elements(instructionsBuffer)) + "\n")
+    filez.write("AIB:" + ",".join(fromat4Elements(arithmeticInstructionBuffer)) + "\n")
+    filez.write("LIB:" + ",".join(fromat4Elements(loadInstructionBuffer)) + "\n")
+    filez.write("ADB:" + ",".join(fromat2Elements(addressBuffer)) + "\n")
+    filez.write("REB:" + ",".join(fromat2Elements(resultBuffer)) + "\n")
+    filez.write("RGF:" + ",".join(fromat2Elements(registerFile)) + "\n")
+    filez.write("DAM:" + ",".join(fromat2Elements(dataMemory)))
+
+filez = open("simulation.txt", 'w')
 
 stepCount = 0
 initialize()
-printResults(stepCount)
+writeResults(stepCount, filez)
 stepCount += 1
 
 while instructionsMemory or loadInstructionBuffer or arithmeticInstructionBuffer or addressBuffer or resultBuffer:
+    filez.write("\n")
+    filez.write("\n")
+
     write(resultBuffer)
     load(addressBuffer)
     addressCalculation(loadInstructionBuffer)
@@ -149,5 +171,7 @@ while instructionsMemory or loadInstructionBuffer or arithmeticInstructionBuffer
     issue1(instructionsBuffer)
     decodeAndRead(instructionsMemory, registerFile)
 
-    printResults(stepCount)
+    writeResults(stepCount, filez)
     stepCount += 1
+
+filez.close()
